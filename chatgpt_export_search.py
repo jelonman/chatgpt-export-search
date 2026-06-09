@@ -19,6 +19,21 @@ import re
 from datetime import datetime, timezone
 
 
+import zipfile
+
+def _load_export(path):
+    """Load conversations from a ChatGPT export — accepts the raw .zip or conversations.json."""
+    if path.lower().endswith(".zip"):
+        with zipfile.ZipFile(path) as z:
+            name = next((n for n in z.namelist() if n.endswith("conversations.json")), None)
+            if not name:
+                raise SystemExit("No conversations.json found inside the zip.")
+            with z.open(name) as f:
+                return json.loads(f.read().decode("utf-8"))
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def _parts_to_text(content):
     if not isinstance(content, dict):
         return ""
@@ -70,7 +85,7 @@ def _ts(t):
 
 def main():
     ap = argparse.ArgumentParser(description="Search your ChatGPT conversations.json export.")
-    ap.add_argument("input", help="Path to conversations.json")
+    ap.add_argument("input", help="Path to conversations.json OR the export .zip")
     ap.add_argument("query", help="Search query (treated as a regular expression; case-insensitive)")
     ap.add_argument("-n", "--num", type=int, default=10, help="Max results to show (default 10)")
     ap.add_argument("--role", choices=["user", "assistant"], help="Only search your messages or ChatGPT's")
@@ -81,8 +96,7 @@ def main():
     except re.error:
         pat = re.compile(re.escape(args.query), re.IGNORECASE)
 
-    with open(args.input, encoding="utf-8") as f:
-        data = json.load(f)
+    data = _load_export(args.input)
     convos = [c for c in (data if isinstance(data, list) else data.get("conversations", [data])) if isinstance(c, dict)]
 
     hits = []

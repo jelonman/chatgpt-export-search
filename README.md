@@ -19,7 +19,9 @@ python3 chatgpt_export_search.py conversations.json "vector index"
     For most apps an HNSW vector index gives the best recall/speed tradeoff.
 ```
 
-- ✅ No dependencies — Python 3 standard library only; runs entirely locally
+- ✅ ✅ Accepts the raw export **.zip** or the extracted `conversations.json`
+
+No dependencies — Python 3 standard library only; runs entirely locally
 - ✅ Regex queries, case-insensitive, ranked by match count, with highlighted snippets
 - ✅ `--role user` / `--role assistant` to search only your side or ChatGPT's
 - ✅ Handles both the modern (mapping-tree) and older (flat) export formats
